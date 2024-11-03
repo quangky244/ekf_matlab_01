@@ -77,13 +77,15 @@ plot(tspan,y,tspan,y_est_hist);
 xlabel("Time (s)");
 ylabel("System output");
 legend("Measured","Estimated");
-
+title("Extended Kalman Filter")
 figure(3);clf(3);
+
 subplot(2,1,1)
 plot(tspan,x_real(:,1),tspan,x_hist(:,1));
 xlabel("Time (s)");
 ylabel("State x1 ");
 legend("True","Estimated");
+title("Extended Kalman Filter","States Comparison")
 subplot(2,1,2)
 plot(tspan,x_real(:,2),tspan,x_hist(:,2));
 xlabel("Time (s)");
