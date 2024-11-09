@@ -1,4 +1,5 @@
 clear
+init
 % Define the system parameters
 A = [0, 1; -.2, -.3];
 B = [0.05; 1];
