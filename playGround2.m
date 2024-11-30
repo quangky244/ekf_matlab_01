@@ -4,22 +4,22 @@ init
 A = [0, 1; -.2, -.3];
 B = [0.05; 1];
 H = [1, 0];
-Q = [0.001, 0; 0, 0.001];
-R = 0.05;
-P = 10*eye(2);
-x = [0; 0];
+Q = [0.001, 0; 0, 0.00001];
+R = 0.01;
+P = 1*eye(2);
+x = [2; 0];
 
 D = 0;
 
 syst = ss(A,B,H,D);
 
-T = 8e-3;
+T = 32e-3;
 tspan = 0:T:50;
 n_steps = length(tspan);
 reshape(tspan,length(tspan),1);
 uspan = ones(length(tspan),1);
 % uspan = 1*sin(tspan*2*pi*1);
-[y,~,x_real] = lsim(syst,uspan,tspan);
+[y,~,x_real] = lsim(syst,uspan,tspan,x);
 y = y + sqrt(R)*randn(n_steps,1);
 
 syst_d = c2d(syst,T);
@@ -46,7 +46,7 @@ F = @(x,u) syst_d.A;
 % dh/dx
 H = @(x) [1 0]; 
 
-
+x = [0;0];
 % Create the Kalman Filter object
 ekf = ExtendedKalmanFilter(f, h, F, H,Q,R,P, x);
 % kf = KalmanFilter(A, B, H, Q, R, P, x);
