@@ -5,7 +5,7 @@ A = [0, 1; -.2, -.3];
 B = [0.05; 1];
 H = [1, 0];
 Q = [0.001, 0; 0, 0.001];
-R = 0.5;
+R = 0.05;
 P = 10*eye(2);
 x = [0; 0];
 
@@ -26,10 +26,6 @@ syst_d = c2d(syst,T);
 figure(1);clf(1);
 step(syst); hold on;
 step(syst_d);
-%%
-
-
-
 
 
 %% Define extended kalman filter, instead of Kalman
@@ -54,10 +50,12 @@ H = @(x) [1 0];
 % Create the Kalman Filter object
 ekf = ExtendedKalmanFilter(f, h, F, H,Q,R,P, x);
 % kf = KalmanFilter(A, B, H, Q, R, P, x);
-u_hist = zeros(length(n_steps),1);
-y_est_hist = zeros(length(n_steps),1);
-x_hist = zeros(length(n_steps),2);
+u_hist = zeros((n_steps),1);
+y_est_hist = zeros((n_steps),1);
+x_hist = zeros((n_steps),2);
+P_hist = zeros((n_steps),numel(x),numel(x));
 x_hist(1,:) = x;
+P_hist(1,:,:) = P;
 for i = 2:length(tspan)
     % Predict and update steps
     u = uspan(i);  % Control input
@@ -65,9 +63,10 @@ for i = 2:length(tspan)
 
     ekf = ekf.predict(u);
     ekf = ekf.update(z);
-
+    P = ekf.P;
     y_est =  h(ekf.x);
 
+    P_hist(i,:,:)= P;
     y_est_hist(i) = y_est;
     x_hist(i,:) = reshape(ekf.x,1,2);
 end
@@ -79,18 +78,33 @@ xlabel("Time (s)");
 ylabel("System output");
 legend("Measured","Estimated");
 title("Extended Kalman Filter")
-figure(3);clf(3);
 
-subplot(2,1,1)
+misc.figure(3);
+
+ax1 = nexttile(1);
 plot(tspan,x_real(:,1),tspan,x_hist(:,1));
 xlabel("Time (s)");
 ylabel("State x1 ");
 legend("True","Estimated");
 title("Extended Kalman Filter","States Comparison")
-subplot(2,1,2)
+ax2 = nexttile(2);
 plot(tspan,x_real(:,2),tspan,x_hist(:,2));
 xlabel("Time (s)");
 ylabel("State x2 ");
 legend("True","Estimated");
+linkaxes([ax1,ax2],'x');
 
-
+misc.figure(4);
+ax1 = nexttile(1);
+plot(tspan,x_hist(:,1)-x_real(:,1)); hold on;
+plot(tspan,sqrt(P_hist(:,1,1)),'r');
+plot(tspan,-sqrt(P_hist(:,1,1)),'r');
+xlabel("Time [s]");
+ylabel("Error state x1");
+ax2 = nexttile(2);
+plot(tspan,x_hist(:,2)-x_real(:,2)); hold on;
+plot(tspan,sqrt(P_hist(:,2,2)),'r');
+plot(tspan,-sqrt(P_hist(:,2,2)),'r');
+xlabel("Time [s]");
+ylabel("Error state x2");
+linkaxes([ax1,ax2],'x');
